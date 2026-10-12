@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf7f2">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="서재">
+<meta name="description" content="txt, docx, pdf, epub, md, html을 읽는 오프라인 독서 앱">
+<title>서재</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="styles.css">
+<script>
+/* 첫 화면 깜빡임 방지: 저장된 테마를 먼저 적용 */
+(function(){try{
+  var s=JSON.parse(localStorage.getItem('seojae.settings')||'{}');
+  var t=s.theme||'auto';
+  if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'night':'light';
+  document.documentElement.dataset.theme=t;
+  var c={light:'#faf7f2',sepia:'#f1e6cf',night:'#111214'}[t];
+  document.querySelector('meta[name=theme-color]').content=c;
+}catch(e){}})();
+</script>
+</head>
+<body>
+
+<!-- ───────── 서재(초기 화면) ───────── -->
+<main id="home" class="view">
+  <header class="home-head">
+    <h1>서재</h1>
+    <button class="icon-btn" id="home-theme" aria-label="화면 테마 바꾸기"></button>
+  </header>
+
+  <section class="actions" aria-label="책 추가">
+    <button class="act primary" id="btn-open"><span class="ico" data-i="folder"></span><span>파일 열기</span></button>
+    <button class="act" id="btn-paste"><span class="ico" data-i="clipboard"></span><span>텍스트 붙여넣기</span></button>
+  </section>
+  <p class="formats">txt · docx · pdf · epub · md · html</p>
+
+  <section id="resume" class="resume" hidden></section>
+
+  <section class="shelf-wrap">
+    <div class="shelf-head"><h2>내 서재</h2><span id="shelf-count"></span></div>
+    <div id="shelf" class="shelf"></div>
+    <div id="empty" class="empty" hidden>
+      <p class="empty-t">아직 읽던 책이 없어요</p>
+      <p class="empty-s">파일을 열거나 글을 붙여넣으면 여기에 쌓여요.<br>읽던 위치는 자동으로 저장돼요.</p>
+    </div>
+  </section>
+  <input id="file" type="file" hidden multiple
+    accept=".txt,.text,.md,.markdown,.docx,.pdf,.epub,.html,.htm,.xhtml,text/plain,text/markdown,text/html,application/pdf,application/epub+zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+</main>
+
+<!-- ───────── 리더 ───────── -->
+<section id="reader" class="view" hidden>
+  <div id="progress"><i></i></div>
+  <div id="topbar"><span id="tb-title"></span><span id="tb-pct"></span></div>
+  <article id="page" aria-live="off"></article>
+
+  <nav id="island" aria-label="독서 메뉴">
+    <button data-act="home" aria-label="서재로"><span class="ico" data-i="library"></span></button>
+    <button data-act="toc" aria-label="목차"><span class="ico" data-i="list"></span></button>
+    <button data-act="marks" id="isl-mark" aria-label="책갈피"><span class="ico" data-i="bookmark"></span></button>
+    <button data-act="tts" id="isl-tts" aria-label="소리 내어 읽기"><span class="ico" data-i="headphones"></span></button>
+    <button data-act="settings" aria-label="글꼴과 화면 설정"><span class="ico" data-i="type"></span></button>
+    <button data-act="night" id="isl-night" aria-label="나이트 모드 전환"></button>
+  </nav>
+
+  <div id="scrim" hidden></div>
+
+  <!-- 목차 -->
+  <section class="sheet" id="sheet-toc" aria-label="목차" aria-hidden="true">
+    <div class="sheet-grab"></div>
+    <header><h3>목차</h3><span class="sub" id="toc-count"></span></header>
+    <div class="seg" id="toc-mode" role="group" aria-label="목차 방식">
+      <button data-mode="auto">자동 감지</button>
+      <button data-mode="seg">임의 구간</button>
+    </div>
+    <div class="chips" id="toc-seg" hidden>
+      <button data-seg="3000">3천 자</button>
+      <button data-seg="6000">6천 자</button>
+      <button data-seg="12000">1.2만 자</button>
+      <button data-seg="25000">2.5만 자</button>
+    </div>
+    <p class="note" id="toc-note" hidden></p>
+    <ol id="toc-list" class="toc"></ol>
+  </section>
+
+  <!-- 책갈피 -->
+  <section class="sheet" id="sheet-marks" aria-label="책갈피" aria-hidden="true">
+    <div class="sheet-grab"></div>
+    <header><h3>책갈피</h3><span class="sub" id="marks-count"></span></header>
+    <button class="wide" id="mark-add"></button>
+    <ul id="marks-list" class="marks"></ul>
+  </section>
+
+  <!-- 읽어주기 -->
+  <section class="sheet" id="sheet-tts" aria-label="소리 내어 읽기" aria-hidden="true">
+    <div class="sheet-grab"></div>
+    <header><h3>소리 내어 읽기</h3><span class="sub" id="tts-state"></span></header>
+    <p class="tts-now" id="tts-now">지금 보이는 곳부터 읽어 드려요.</p>
+    <div class="tts-ctl">
+      <button id="tts-prev" aria-label="이전 문단"><span class="ico" data-i="skipBack"></span></button>
+      <button id="tts-play" class="big" aria-label="재생"></button>
+      <button id="tts-next" aria-label="다음 문단"><span class="ico" data-i="skipFwd"></span></button>
+    </div>
+    <div class="row"><label for="tts-rate">속도</label><input id="tts-rate" type="range" min="0.6" max="2.2" step="0.1"><output id="tts-rate-o"></output></div>
+    <div class="row"><label for="tts-voice">목소리</label><select id="tts-voice"></select></div>
+    <p class="note" id="tts-note" hidden></p>
+  </section>
+
+  <!-- 설정 -->
+  <section class="sheet" id="sheet-settings" aria-label="글꼴과 화면" aria-hidden="true">
+    <div class="sheet-grab"></div>
+    <header><h3>글꼴과 화면</h3></header>
+    <div class="grp">
+      <div class="lab">글꼴</div>
+      <div class="chips fonts" id="set-font">
+        <button data-v="serif" style="font-family:var(--f-serif)">노토 명조</button>
+        <button data-v="sans" style="font-family:var(--f-sans)">프리텐다드</button>
+        <button data-v="sysSerif" style="font-family:var(--f-sysSerif)">시스템 명조</button>
+        <button data-v="sysSans" style="font-family:var(--f-sysSans)">시스템 고딕</button>
+      </div>
+    </div>
+    <div class="row"><label for="set-size">글자 크기</label>
+      <button class="step" data-step="size:-1" aria-label="작게">A−</button>
+      <input id="set-size" type="range" min="14" max="34" step="1">
+      <button class="step" data-step="size:1" aria-label="크게">A+</button>
+      <output id="set-size-o"></output></div>
+    <div class="row"><label for="set-ls">자간</label><input id="set-ls" type="range" min="-0.04" max="0.12" step="0.005"><output id="set-ls-o"></output></div>
+    <div class="row"><label for="set-lh">줄 간격</label><input id="set-lh" type="range" min="1.4" max="2.4" step="0.05"><output id="set-lh-o"></output></div>
+    <div class="grp">
+      <div class="lab">여백</div>
+      <div class="chips" id="set-pad">
+        <button data-v="narrow">좁게</button><button data-v="normal">보통</button><button data-v="wide">넓게</button>
+      </div>
+    </div>
+    <div class="grp">
+      <div class="lab">화면 테마</div>
+      <div class="chips" id="set-theme">
+        <button data-v="light">라이트</button><button data-v="sepia">세피아</button><button data-v="night">나이트</button><button data-v="auto">자동</button>
+      </div>
+    </div>
+    <div class="sw-list">
+      <label class="sw"><span>메뉴 자동 숨김</span><input type="checkbox" id="set-autohide"><i></i></label>
+      <label class="sw"><span>화면을 탭해서 넘기기</span><input type="checkbox" id="set-tap"><i></i></label>
+      <label class="sw"><span>대사 강조</span><input type="checkbox" id="set-dlg"><i></i></label>
+      <label class="sw"><span>양쪽 정렬</span><input type="checkbox" id="set-justify"><i></i></label>
+      <label class="sw"><span>읽는 동안 화면 켜두기</span><input type="checkbox" id="set-wake"><i></i></label>
+    </div>
+  </section>
+</section>
+
+<!-- ───────── 공용 ───────── -->
+<div id="modal" class="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="m-title">
+    <h3 id="m-title"></h3>
+    <div id="m-body"></div>
+    <div class="m-btns" id="m-btns"></div>
+  </div>
+</div>
+<div id="loader" class="loader" hidden><div class="spin"></div><p id="loader-t">불러오는 중…</p></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="drop" class="drop" hidden><p>여기에 놓으면 서재에 추가돼요</p></div>
+
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/mammoth.browser.min.js"></script>
+<script src="parse.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
