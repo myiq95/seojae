@@ -1,7 +1,7 @@
 /* 서재 · 서비스 워커
    파일을 고쳐서 다시 올릴 때마다 VERSION 숫자를 올려 주세요.
    (올리지 않으면 기기에 저장된 옛 파일이 계속 보일 수 있어요) */
-const VERSION = 'v1.0.1';
+const VERSION = 'v1.0.2';
 const CACHE = 'seojae-' + VERSION;
 
 const CORE = ["./", "index.html", "styles.css", "app.js", "parse.js", "manifest.webmanifest", "fonts/fonts.css", "vendor/jszip.min.js", "vendor/mammoth.browser.min.js", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png", "apple-touch-icon.png"];

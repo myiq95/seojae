@@ -9,7 +9,7 @@
   --accent:#3b5169; --accent-ink:#fff; --accent-soft:rgba(59,81,105,.1);
   --glass:rgba(255,253,249,.8);
   --shadow:0 12px 32px rgba(30,32,44,.16),0 2px 8px rgba(30,32,44,.08);
-  --danger:#b4443c;
+  --danger:#b4443c; --bar:rgba(59,81,105,.6);
 
   --fs:19px; --lh:1.9; --ls:0em; --fam:var(--f-serif); --padx:26px; --measure:680px;
   --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
@@ -18,7 +18,7 @@
   --bg:#f1e6cf; --bg2:#e8dbbf; --panel:#f6ecd7;
   --ink:#3a2f22; --muted:#8a7a62; --line:rgba(58,47,34,.16);
   --accent:#74552a; --accent-ink:#fff8ea; --accent-soft:rgba(116,85,42,.12);
-  --glass:rgba(246,236,215,.82);
+  --glass:rgba(246,236,215,.82); --bar:rgba(116,85,42,.6);
 }
 [data-theme=night]{
   --bg:#111214; --bg2:#1a1c1f; --panel:#1b1d21;
@@ -26,7 +26,7 @@
   --accent:#9db6d1; --accent-ink:#0e1620; --accent-soft:rgba(157,182,209,.14);
   --glass:rgba(30,32,36,.82);
   --shadow:0 12px 32px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.4);
-  --danger:#e2766d;
+  --danger:#e2766d; --bar:rgba(157,182,209,.65);
 }
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -121,8 +121,8 @@ body.chrome-off #topbar{transform:translateY(-100%);opacity:0}
 #page .ch-sub{margin:0 0 .6em;font-family:var(--f-sans);font-size:.62em;font-weight:600;color:var(--accent);letter-spacing:0}
 #page h3.sub{margin:2.2em 0 1em;font-size:1.12em;font-weight:700;line-height:1.5;letter-spacing:-.01em}
 #page .sep{height:1px;width:42px;background:var(--line);margin:2.4em 0}
-#page blockquote{padding-left:1em;border-left:2px solid var(--accent-soft);color:inherit;opacity:.92}
-#page.dlg p.dlg{padding-left:.9em;margin-left:-.9em;box-shadow:inset 2px 0 0 var(--accent-soft);}
+#page blockquote{padding-left:1em;border-left:3px solid var(--bar);color:inherit}
+#page.dlg p.dlg{padding-left:.9em;margin-left:-.9em;box-shadow:inset 3px 0 0 var(--bar);}
 #page .marked{position:relative}
 #page .marked::after{content:"";position:absolute;right:calc(var(--padx) * -0.62);top:.35em;width:10px;height:16px;background:var(--accent);
   clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%);opacity:.85}
